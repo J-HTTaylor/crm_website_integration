@@ -58,7 +58,7 @@ while [ $# -gt 0 ]; do
 done
 
 # Run from the project root no matter where this script was called from.
-PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd -P)"
 cd "$PROJECT_DIR"
 
 # --- Step 1: Check required tools -------------------------------------------

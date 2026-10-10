@@ -1,0 +1,2 @@
+#ensures the scripts will run correctly on linux
+*.sh text eol=lf

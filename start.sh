@@ -16,8 +16,8 @@
 
 set -euo pipefail
 
-# Vaadin 24+ requires Java 17 or newer.
-REQUIRED_JAVA_MAJOR=17
+# Vaadin 24+ requires Java 21 or newer.
+REQUIRED_JAVA_MAJOR=21
 PORT_OVERRIDE=""
 
 # --- helpers ----------------------------------------------------------------
@@ -65,6 +65,9 @@ cd "$PROJECT_DIR"
 
 command -v java >/dev/null 2>&1 \
     || die "Java is not installed. Get JDK ${REQUIRED_JAVA_MAJOR} or newer from https://adoptium.net/"
+
+command -v javac >/dev/null 2>&1 \
+    || die "javac (Java compiler) is not installed. Please install the full JDK ${REQUIRED_JAVA_MAJOR} (e.g., openjdk-21-jdk)."
 
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk -F. '{print $1}')
 if [ "$JAVA_VERSION" = "1" ]; then

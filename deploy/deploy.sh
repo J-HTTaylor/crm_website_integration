@@ -69,7 +69,7 @@ JAR_FILE=$(ls target/*.jar | head -n 1)
 [ -f "$JAR_FILE" ] || { echo "ERROR: No compiled JAR found in target/" >&2; exit 1; }
 
 echo "==> Ensuring remote directory exists and permissions are set"
-ssh "${SSH_OPTS[@]}" "$TARGET" "sudo mkdir -p ${REMOTE_DIR} && sudo chown ${REMOTE_USER}:${REMOTE_USER} ${REMOTE_DIR}"
+ssh "${SSH_OPTS[@]}" "$TARGET" "sudo mkdir -p ${REMOTE_DIR} && sudo chown ${REMOTE_USER}:crm ${REMOTE_DIR} && sudo chmod 750 ${REMOTE_DIR}"
 
 echo "==> Copying JAR file to ${TARGET}:${REMOTE_DIR}/app.jar"
 scp "${SSH_OPTS[@]}" "$JAR_FILE" "${TARGET}:${REMOTE_DIR}/app.jar"

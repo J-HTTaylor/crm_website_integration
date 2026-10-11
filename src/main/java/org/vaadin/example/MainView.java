@@ -7,6 +7,8 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.checkbox.Checkbox;
+
 
 /**
  * A sample Vaadin view class.
@@ -37,6 +39,7 @@ public class MainView extends VerticalLayout {
         TextField textField = new TextField("Your name");
         textField.addClassName("bordered");
 
+        Checkbox serverUpdateTest = new Checkbox("Checking that server updates work in real time");
         // Button click listeners can be defined as lambda expressions
         Button button = new Button("Say hello", e -> {
             add(new Paragraph(service.greet(textField.getValue())));

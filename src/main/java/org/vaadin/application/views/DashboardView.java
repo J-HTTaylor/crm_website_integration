@@ -1,5 +1,6 @@
 package org.vaadin.application.views;
 
+import org.vaadin.application.layout.DashboardLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
@@ -10,7 +11,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
 @PageTitle("Dashboard")
-@Route(value = "dashboard", layout = MainLayout.class)
+@Route(value = "dashboard", layout = DashboardLayout.class)
 public class DashboardView extends VerticalLayout {
     public DashboardView() {
         setPadding(true);
@@ -19,20 +20,9 @@ public class DashboardView extends VerticalLayout {
         addClassName("dashboard-view");
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
 
-        H2 headline = new H2("Dashboard");
-        Paragraph paragraph = new Paragraph("This is the dashboard view.");
+        H2 headline = new H2("Overview");
+        Paragraph paragraph = new Paragraph("This is the overview view.");
 
         add(headline, paragraph);
-
-        HorizontalLayout subMenuLayout = new HorizontalLayout();
-        subMenuLayout.setSpacing(true);
-
-        subMenuLayout.add(
-        new RouterLink("locations", LocationsView.class),
-        new RouterLink("Products", ProductsView.class),
-        new RouterLink("deliveries & collections", CollectionsView.class),
-        new RouterLink("Profile", ProfileView.class));
-
-        add(subMenuLayout);
     }
 }

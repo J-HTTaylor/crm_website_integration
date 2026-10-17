@@ -1,15 +1,15 @@
 package org.vaadin.application.views;
 
+import org.vaadin.application.layout.DashboardLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
 @PageTitle("Locations")
-@Route(value = "hub/Locations", layout = MainLayout.class)
+@Route(value = "hub/Locations", layout = DashboardLayout.class)
 public class LocationsView extends VerticalLayout {
     public LocationsView() {
         setPadding(true);
@@ -22,8 +22,6 @@ public class LocationsView extends VerticalLayout {
         Paragraph paragraph = new Paragraph("This is the locations view.");
 
         add(headline, paragraph);
-
-        add(new RouterLink("Back to Dashboard", DashboardView.class));
     }
     
 }

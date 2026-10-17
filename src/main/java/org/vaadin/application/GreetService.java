@@ -1,4 +1,4 @@
-package org.vaadin.example;
+package org.vaadin.application;
 
 import java.io.Serializable;
 import org.springframework.stereotype.Service;

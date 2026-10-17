@@ -1,4 +1,4 @@
-package org.vaadin.example;
+package org.vaadin.application;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;

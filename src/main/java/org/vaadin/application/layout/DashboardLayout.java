@@ -2,8 +2,10 @@ package org.vaadin.application.layout;
 
 import org.vaadin.application.views.*;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -48,11 +50,11 @@ public class DashboardLayout extends AppLayout {
     private void createDrawer() {
 
         VerticalLayout drawerNav = new VerticalLayout(
-            new RouterLink("Overview", DashboardView.class),
-            new RouterLink("Locations", LocationsView.class),
-            new RouterLink("Products", ProductsView.class),
-            new RouterLink("Deliveries & collections", CollectionsView.class),
-            new RouterLink("Profile", ProfileView.class)
+            new Button("Overview", e -> UI.getCurrent().navigate(DashboardView.class)),
+            new Button("Locations", e -> UI.getCurrent().navigate(LocationsView.class)),
+            new Button("Products", e -> UI.getCurrent().navigate(ProductsView.class)),
+            new Button("Deliveries & collections", e -> UI.getCurrent().navigate(CollectionsView.class)),
+            new Button("Profile", e -> UI.getCurrent().navigate(ProfileView.class))
         );
         drawerNav.setPadding(true);
         drawerNav.setSpacing(true);

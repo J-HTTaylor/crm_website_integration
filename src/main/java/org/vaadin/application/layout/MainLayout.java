@@ -1,8 +1,16 @@
-package org.vaadin.application.views;
+package org.vaadin.application.layout;
+
+import org.vaadin.application.views.AboutView;
+import org.vaadin.application.views.CentreView;
+import org.vaadin.application.views.ContactView;
+import org.vaadin.application.views.DashboardView;
+import org.vaadin.application.views.HomeView;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -30,11 +38,11 @@ public class MainLayout extends AppLayout {
 
         //links to other main pages
         menuLayout.add(
-            new RouterLink("Home", HomeView.class),
-            new RouterLink("Find your centre", CentreView.class),
-            new RouterLink("About us", AboutView.class),
-            new RouterLink("Contact us", ContactView.class),
-            new RouterLink("Dashboard", DashboardView.class)
+            new Button ("Home", e -> UI.getCurrent().navigate(HomeView.class)),
+            new Button("Find your centre", e -> UI.getCurrent().navigate(CentreView.class)),
+            new Button("About us", e -> UI.getCurrent().navigate(AboutView.class)),
+            new Button("Contact us", e -> UI.getCurrent().navigate(ContactView.class)),
+            new Button("Dashboard", e -> UI.getCurrent().navigate(DashboardView.class))
         );
 
         // Place logo and menu side-by-side in header

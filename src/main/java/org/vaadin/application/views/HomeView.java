@@ -1,5 +1,6 @@
 package org.vaadin.application.views;
 
+import org.vaadin.application.layout.MainLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;

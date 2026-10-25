@@ -68,6 +68,9 @@ command -v java >/dev/null 2>&1 \
 
 command -v javac >/dev/null 2>&1 \
     || die "javac (Java compiler) is not installed. Please install the full JDK ${REQUIRED_JAVA_MAJOR} (e.g., openjdk-21-jdk)."
+#MYSQL server check
+command -v mysql >/dev/null 2>&1 \
+    || die "MySQL is not installed. Please install MySQL server."
 
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk -F. '{print $1}')
 if [ "$JAVA_VERSION" = "1" ]; then
@@ -94,7 +97,37 @@ say "Installing dependencies and building frontend assets (this may take a momen
 # the directory exists here:
 # mkdir -p data
 
+say "Creating MYSQL Database and user if not already present"
+
+sudo mysql -e "
+CREATE USER IF NOT EXISTS 'vaadin'@'localhost' IDENTIFIED BY 'Vaadin_Full_Stack!';
+CREATE DATABASE IF NOT EXISTS velorim_crm;
+GRANT ALL PRIVILEGES ON velorim_crm.* TO 'vaadin'@'localhost';
+FLUSH PRIVILEGES;"
+
+#Table creation
+COUNTRY_FILE="mysql/countries.sql"
+if [ -f "$COUNTRY_FILE" ]; then
+    echo "Importing countries from $COUNTRY_FILE..."
+    sudo mysql velorim_crm < "$COUNTRY_FILE"
+    echo "Countries imported successfully!"
+else
+    echo "Warning: $COUNTRY_FILE not found, skipping country import."
+fi
+say "MySQL version: $(mysql --version)"
+
+SCHEMA_FILE="mysql/schema.sql"
+if [ -f "$SCHEMA_FILE" ]; then
+    echo "Importing schema from $SCHEMA_FILE..."
+    sudo mysql velorim_crm < "$SCHEMA_FILE"
+    echo "Schema imported successfully!"
+else
+    echo "Warning: $SCHEMA_FILE not found, skipping schema import."
+fi
+say "MySQL version: $(mysql --version)"
+
 # --- Step 4: Start the app and print the URL ----------------------------------
+
 
 PORT_IN_USE="${PORT_OVERRIDE:-8080}"
 say "Starting Vaadin app on http://localhost:${PORT_IN_USE} -- press Ctrl+C to stop"

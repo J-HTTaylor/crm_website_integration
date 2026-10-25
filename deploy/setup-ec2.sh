@@ -87,6 +87,49 @@ fi
 
 say "Java version: $(java -version 2>&1 | head -n 1)"
 
+#MYSQL install
+say "Installing MYSQL"
+
+if command -v mysql >/dev/null 2>&1; then
+    say "MySQL is already installed"
+else
+    say "Installing MySQL server"
+    sudo apt update
+    sudo apt install -y mysql-server
+    sudo systemctl start mysql
+    sudo systemctl enable mysql
+fi
+
+#MYSQL setting up vaadin user, db and tables
+say "Setting up MySQL database and user for Vaadin app"
+
+# user and database creation
+sudo mysql -e "
+CREATE USER IF NOT EXISTS 'vaadin'@'localhost' IDENTIFIED BY 'x';
+CREATE DATABASE IF NOT EXISTS velorim_crm;
+GRANT ALL PRIVILEGES ON velorim_crm.* TO 'vaadin'@'localhost';
+FLUSH PRIVILEGES;"
+
+#Table creation
+COUNTRY_FILE="mysql/countries.sql"
+if [ -f "$COUNTRY_FILE" ]; then
+    echo "Importing countries from $COUNTRY_FILE..."
+    sudo mysql velorim_crm < "$COUNTRY_FILE"
+    echo "Countries imported successfully!"
+else
+    echo "Warning: $COUNTRY_FILE not found, skipping country import."
+fi
+say "MySQL version: $(mysql --version)"
+
+SCHEMA_FILE="mysql/schema.sql"
+if [ -f "$SCHEMA_FILE" ]; then
+    echo "Importing schema from $SCHEMA_FILE..."
+    sudo mysql velorim_crm < "$SCHEMA_FILE"
+    echo "Schema imported successfully!"
+else
+    echo "Warning: $SCHEMA_FILE not found, skipping schema import."
+fi
+say "MySQL version: $(mysql --version)"
 # --- service account and directories ----------------------------------------
 
 say "Creating the '$APP_USER' service account"

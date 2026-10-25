@@ -142,7 +142,8 @@ fi
 say "Creating MYSQL Database and user if not already present"
 # Check if a password is provided in the environment
 if [ -n "$DB_PASSWORD" ]; then
-    mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" < mysql/setup_db.sql
+    mysql -u"${DB_USERNAME:-root}" -p"
+    ${DB_PASSWORD:-}" < mysql/setup_db.sql
 else
     mysql -u"${DB_USERNAME:-root}" < mysql/setup_db.sql
 fi

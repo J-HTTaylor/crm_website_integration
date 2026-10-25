@@ -149,18 +149,7 @@ else
 fi
 say "Database and user setup completed."
 
-#db creation check
-DB_CHECK=$(mysql -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD:-}" -N -s -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${DB_DATABASE:-velorim_crm}';" 2>/dev/null | tr -d '\r')
-
-if [ "$DB_CHECK" -eq 1 ]; then
-    say "Database 'velorim_crm' is verified and ready."
-else
-    say "Error: Database 'velorim_crm' could not be created."
-    exit 1
-fi
-
 #Table creation
-
 COUNTRY_FILE="mysql/countries.sql"
 if [ -f "$COUNTRY_FILE" ]; then
     say "Importing countries from $COUNTRY_FILE..."

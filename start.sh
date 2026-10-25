@@ -68,9 +68,6 @@ command -v java >/dev/null 2>&1 \
 
 command -v javac >/dev/null 2>&1 \
     || die "javac (Java compiler) is not installed. Please install the full JDK ${REQUIRED_JAVA_MAJOR} (e.g., openjdk-21-jdk)."
-#MYSQL server check
-command -v mysql >/dev/null 2>&1 \
-    || die "MySQL is not installed. Please install MySQL server."
 
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk -F. '{print $1}')
 if [ "$JAVA_VERSION" = "1" ]; then
@@ -81,6 +78,34 @@ if [ "$JAVA_VERSION" -lt "$REQUIRED_JAVA_MAJOR" ]; then
     die "Java version is too old (found Java $JAVA_VERSION). This Vaadin app needs Java ${REQUIRED_JAVA_MAJOR} or newer."
 fi
 
+#MYSQL server check
+command -v mysql >/dev/null 2>&1 \
+    || die "MySQL is not installed. Please install MySQL server."
+
+# --- Auto-Check if MySQL/MariaDB is Running & Responding ---
+say "Checking if MySQL/MariaDB server is running..."
+
+# Try a silent ping or a quick query to see if the server responds
+if mysqladmin ping --silent 2>/dev/null; then
+    say "Database server is up and running!"
+else
+    say "Warning: Database server is not responding."
+    
+    # Try to start it automatically if on a Linux/WSL system with systemctl
+    if command -v systemctl >/dev/null 2>&1; then
+        say "Attempting to start database service..."
+        sudo systemctl start mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || true
+        
+        # check again to see if it started successfully
+        if mysqladmin ping --silent 2>/dev/null; then
+            say "Successfully started and connected to the database server!"
+        else
+            die "Could not start or connect to the database server. Please start it manually."
+        fi
+    else
+        die "Database server is not running. Please start your MySQL/MariaDB service (or XAMPP) and try again."
+    fi
+fi
 [ -f pom.xml ] || die "no pom.xml here. Run this script from inside the project folder."
 [ -f ./mvnw ] || die "no Maven wrapper (mvnw) found in project root."
 
@@ -108,21 +133,21 @@ FLUSH PRIVILEGES;"
 #Table creation
 COUNTRY_FILE="mysql/countries.sql"
 if [ -f "$COUNTRY_FILE" ]; then
-    echo "Importing countries from $COUNTRY_FILE..."
+    say "Importing countries from $COUNTRY_FILE..."
     sudo mysql velorim_crm < "$COUNTRY_FILE"
-    echo "Countries imported successfully!"
+    say "Countries imported successfully!"
 else
-    echo "Warning: $COUNTRY_FILE not found, skipping country import."
+    say "Warning: $COUNTRY_FILE not found, skipping country import."
 fi
 say "MySQL version: $(mysql --version)"
 
 SCHEMA_FILE="mysql/schema.sql"
 if [ -f "$SCHEMA_FILE" ]; then
-    echo "Importing schema from $SCHEMA_FILE..."
+    say "Importing schema from $SCHEMA_FILE..."
     sudo mysql velorim_crm < "$SCHEMA_FILE"
-    echo "Schema imported successfully!"
+    say "Schema imported successfully!"
 else
-    echo "Warning: $SCHEMA_FILE not found, skipping schema import."
+    say "Warning: $SCHEMA_FILE not found, skipping schema import."
 fi
 say "MySQL version: $(mysql --version)"
 

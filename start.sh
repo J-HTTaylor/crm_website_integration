@@ -150,7 +150,7 @@ fi
 say "Database and user setup completed."
 
 #db creation check
-DB_CHECK=$(mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" -N -s -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${DB_DATABASE:-velorim_crm}';" 2>/dev/null | tr -d '\r')
+DB_CHECK=$(mysql -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD:-}" -N -s -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${DB_DATABASE:-velorim_crm}';" 2>/dev/null | tr -d '\r')
 
 if [ "$DB_CHECK" -eq 1 ]; then
     say "Database 'velorim_crm' is verified and ready."

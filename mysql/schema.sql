@@ -63,15 +63,13 @@ CREATE TABLE `centers` (
 
 
 DROP TABLE IF EXISTS `collections`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `collections` (
   `id` int NOT NULL AUTO_INCREMENT,
   `product` varchar(200) NOT NULL,
   `asigned_to`varchar(50) NOT NULL,
-  `due_date` date NOT NULL DEFAULT (CURDATE() + INTERVAL 7 DAY),
+  `due_date` date NOT NULL DEFAULT ((CURDATE()) + INTERVAL 7 DAY),
   `completed` tinyint(1) NOT NULL DEFAULT '0',
-  `created_at` date not null default curdate(),
+  `created_at` date not null default (curdate()),
   `link` varchar(255),
   `service` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),

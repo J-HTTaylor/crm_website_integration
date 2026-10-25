@@ -104,8 +104,8 @@ fi
 say "Setting up MySQL database and user for Vaadin app"
 
 # user and database creation
-sudo mysql -e "
-CREATE USER IF NOT EXISTS 'vaadin'@'localhost' IDENTIFIED BY 'x';
+sudo mysql -u root -p '' -e"
+CREATE USER IF NOT EXISTS 'vaadin'@'localhost' IDENTIFIED BY 'Vaadin_Full_Stack!';
 CREATE DATABASE IF NOT EXISTS velorim_crm;
 GRANT ALL PRIVILEGES ON velorim_crm.* TO 'vaadin'@'localhost';
 FLUSH PRIVILEGES;"

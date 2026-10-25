@@ -92,18 +92,14 @@ else
     say "Warning: Database server is not responding."
     
     # Try to start it automatically if on a Linux/WSL system with systemctl
-    if command -v systemctl >/dev/null 2>&1; then
-        say "Attempting to start database service..."
-        sudo systemctl start mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || true
-        
-        # check again to see if it started successfully
-        if mysqladmin ping --silent 2>/dev/null; then
-            say "Successfully started and connected to the database server!"
-        else
-            die "Could not start or connect to the database server. Please start it manually."
-        fi
+    say "Attempting to start database service..."
+    sudo systemctl start mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || true
+    
+    # check again to see if it started successfully
+    if mysqladmin ping --silent 2>/dev/null; then
+        say "Successfully started and connected to the database server!"
     else
-        die "Database server is not running. Please start your MySQL/MariaDB service (or XAMPP) and try again."
+        die "Could not start or connect to the database server. Please start it manually."
     fi
 fi
 [ -f pom.xml ] || die "no pom.xml here. Run this script from inside the project folder."

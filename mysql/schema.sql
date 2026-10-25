@@ -16,7 +16,7 @@ CREATE TABLE `users` (
   `email` varchar(254) NOT NULL,
   `admin` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE `uk_users_name` (`username`)
+  UNIQUE (`username`)
 );
 
 
@@ -31,7 +31,7 @@ CREATE TABLE `products` (
   `price` decimal(10,2) NOT NULL,
   `SKU` varchar(50) NOT NULL,
   PRIMARY KEY (`id`)
-  UNIQUE `uk_product_name` (`name`)
+  UNIQUE (`name`)
 );
 
 

@@ -126,12 +126,14 @@ say "Ensuring db connection is valid"
 if [ ! -f .env ]; then
     if [ -f .env.example ]; then
         cp .env.example .env
-        echo "Created .env file from .env.example template."
+        say "Created .env file from .env.example template."
     else
         # Or generate default values directly in the script
-        echo "DB_DATABASE=velorim_crm" > .env
-        echo "DB_USERNAME=root" >> .env
-        echo "DB_PASSWORD=" >> .env
+        say "DB_DATABASE=velorim_crm" > .env
+        say "DB_USERNAME=root" >> .env
+        say "DB_PASSWORD=" >> .env
+        say "DB_VAADIN_USERNAME=vaadin" >> .env
+        say "DB_VAADIN_PASSWORD=Vaadin_Full_Stack!" >> .env
     fi
 fi
 
@@ -142,15 +144,15 @@ if [ -f .env ]; then
 fi
 
 say "Creating MYSQL Database and user if not already present"
-mysql -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD:-}" < mysql/setup_db.sql
+mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" < mysql/setup_db.sql
 
 #db creation check
-DB_CHECK=$(mysql -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD:-}" -N -s -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${DB_DATABASE:-velorim_crm}';" 2>/dev/null | tr -d '\r')
+DB_CHECK=$(mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" -N -s -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${DB_DATABASE:-velorim_crm}';" 2>/dev/null | tr -d '\r')
 
 if [ "$DB_CHECK" -eq 1 ]; then
-    echo "Database 'velorim_crm' is verified and ready."
+    say "Database 'velorim_crm' is verified and ready."
 else
-    echo "Error: Database 'velorim_crm' could not be created."
+    say "Error: Database 'velorim_crm' could not be created."
     exit 1
 fi
 
@@ -159,7 +161,7 @@ fi
 COUNTRY_FILE="mysql/countries.sql"
 if [ -f "$COUNTRY_FILE" ]; then
     say "Importing countries from $COUNTRY_FILE..."
-    mysql -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD:-}" "${DB_DATABASE:-velorim_crm}" < "$COUNTRY_FILE"
+    mysql -u"${DB_VAADIN_USERNAME:-root}" -p"$DB_VAADIN_PASSWORD" "${DB_DATABASE:-velorim_crm}" < "$COUNTRY_FILE"
     say "Countries imported successfully!"
 else
     say "Warning: $COUNTRY_FILE not found, skipping country import."
@@ -169,7 +171,7 @@ say "MySQL version: $(mysql --version)"
 SCHEMA_FILE="mysql/schema.sql"
 if [ -f "$SCHEMA_FILE" ]; then
     say "Importing schema from $SCHEMA_FILE..."
-    mysql -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD:-}" "${DB_DATABASE:-velorim_crm}" < "$SCHEMA_FILE"
+    mysql -u"${DB_VAADIN_USERNAME:-root}" -p"$DB_VAADIN_PASSWORD" "${DB_DATABASE:-velorim_crm}" < "$SCHEMA_FILE"
     say "Schema imported successfully!"
 else
     say "Warning: $SCHEMA_FILE not found, skipping schema import."

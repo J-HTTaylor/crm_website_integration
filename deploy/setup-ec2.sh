@@ -90,7 +90,7 @@ say "Java version: $(java -version 2>&1 | head -n 1)"
 #MYSQL install
 say "Installing MYSQL"
 
-if command -v mysql >/dev/null 2>&1; then
+if dpkg -l | grep -q mysql-server; then
     say "MySQL is already installed"
 else
     say "Installing MySQL server"

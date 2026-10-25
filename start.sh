@@ -93,7 +93,7 @@ else
     
     # Try to start it automatically if on a Linux/WSL system with systemctl
     say "Attempting to start database service..."
-    sudo systemctl start mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || true
+    sudo systemctl start mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || sudo net start MYSQL80 || true
     
     # check again to see if it started successfully
     if mysqladmin ping --silent 2>/dev/null; then
@@ -142,8 +142,7 @@ fi
 say "Creating MYSQL Database and user if not already present"
 # Check if a password is provided in the environment
 if [ -n "$DB_PASSWORD" ]; then
-    mysql -u"${DB_USERNAME:-root}" -p"
-    ${DB_PASSWORD:-}" < mysql/setup_db.sql
+    mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" < mysql/setup_db.sql
 else
     mysql -u"${DB_USERNAME:-root}" < mysql/setup_db.sql
 fi

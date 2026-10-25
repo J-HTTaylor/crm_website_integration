@@ -6,12 +6,13 @@
   * @link     https://github.com/Svish/iso-3166-country-codes
   *
   */
+SET foreign_key_checks = 0;
 DROP TABLE IF EXISTS `continents`;
 CREATE TABLE `continents` (
   `code` CHAR(2) NOT NULL COMMENT 'Continent code',
   `name` VARCHAR(255),
   PRIMARY KEY (`code`)
-) ENGINE=InnoDB;
+);
 
 INSERT INTO `continents` VALUES
   ('AF', 'Africa'),
@@ -36,7 +37,8 @@ CREATE TABLE `countries` (
   KEY `continent_code` (`continent_code`),
   UNIQUE KEY `uk_countries_iso3` (`iso3`),
   CONSTRAINT `fk_countries_continents` FOREIGN KEY (`continent_code`) REFERENCES `continents` (`code`)
-) ENGINE=InnoDB;
+);
+SET foreign_key_checks = 0;
 
 INSERT INTO `countries` (`code`, `continent_code`, `name`, `iso3`, `number`, `full_name`) VALUES
   ('AF', 'AS', "Afghanistan", 'AFG', '004', "Islamic Republic of Afghanistan"),

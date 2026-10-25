@@ -7,7 +7,7 @@
 --
 -- Table structure for table `users`
 --
-
+SET foreign_key_checks = 0;
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -80,3 +80,4 @@ CREATE TABLE `collections` (
   KEY `fk_collections_assigned_to` (`asigned_to`),
   CONSTRAINT `fk_collections_assigned_to` FOREIGN KEY (`asigned_to`) REFERENCES `users` (`username`) ON UPDATE CASCADE
 );
+SET foreign_key_checks = 0;

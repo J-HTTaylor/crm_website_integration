@@ -44,8 +44,8 @@ public class CentreView extends VerticalLayout {
     public List<String> fetchCountriesFromDatabase() {
         List<String> countryNames = new ArrayList<>();
         String url = "jdbc:mysql://localhost:3306/velorim_crm";
-        String user = "vaadin";
-        String password = "Vaadin_Full_Stack!";
+        String user = System.getenv("DB_VAADIN_USERNAME");
+        String password = System.getenv("DB_VAADIN_PASSWORD");
 
         try (Connection connection = DriverManager.getConnection(url, user, password);
             Statement statement = connection.createStatement();

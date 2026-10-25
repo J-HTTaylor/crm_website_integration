@@ -30,7 +30,7 @@ CREATE TABLE `products` (
   `name` varchar(200) NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `SKU` varchar(50) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
   UNIQUE (`name`)
 );
 

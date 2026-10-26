@@ -11,8 +11,11 @@
 Description=Vaadin full stack app with crm intergration
 After=network.target
 
+# fixed env variables forthe vaadin user
 [Service]
 Type=simple
+Environment="DB_VAADIN_USERNAME=vaadin"
+Environment="DB_VAADIN_PASSWORD=Vaadin_Full_Stack!"
 
 # Run as an unprivileged user that only exists to run this app. If someone finds
 # a hole in the app, they get this account and nothing more.
@@ -39,6 +42,8 @@ PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
 ReadWritePaths=/opt/crm-app/data
+
+
 
 [Install]
 WantedBy=multi-user.target

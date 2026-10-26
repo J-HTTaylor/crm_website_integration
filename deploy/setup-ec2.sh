@@ -111,7 +111,7 @@ GRANT ALL PRIVILEGES ON velorim_crm.* TO 'vaadin'@'localhost';
 FLUSH PRIVILEGES;"
 
 #Table creation
-COUNTRY_FILE="mysql/countries.sql"
+COUNTRY_FILE="deploy/mysql/countries.sql"
 if [ -f "$COUNTRY_FILE" ]; then
     echo "Importing countries from $COUNTRY_FILE..."
     sudo mysql velorim_crm < "$COUNTRY_FILE"
@@ -121,7 +121,7 @@ else
 fi
 say "MySQL version: $(mysql --version)"
 
-SCHEMA_FILE="mysql/schema.sql"
+SCHEMA_FILE="deploy/mysql/schema.sql"
 if [ -f "$SCHEMA_FILE" ]; then
     echo "Importing schema from $SCHEMA_FILE..."
     sudo mysql velorim_crm < "$SCHEMA_FILE"

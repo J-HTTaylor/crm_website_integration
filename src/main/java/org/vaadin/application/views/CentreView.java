@@ -55,6 +55,7 @@ public class CentreView extends VerticalLayout {
                 countryNames.add(resultSet.getString("full_name"));
             }
         } catch (Exception e) {
+            System.err.println("CRITICAL DATABASE ERROR: " + e.getMessage());
             e.printStackTrace();
         }
 

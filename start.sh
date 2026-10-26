@@ -142,14 +142,14 @@ fi
 say "Creating MYSQL Database and user if not already present"
 # Check if a password is provided in the environment
 if [ -n "$DB_PASSWORD" ]; then
-    mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" < mysql/setup_db.sql
+    mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" < deploy/mysql/setup_db.sql
 else
-    mysql -u"${DB_USERNAME:-root}" < mysql/setup_db.sql
+    mysql -u"${DB_USERNAME:-root}" < deploy/mysql/setup_db.sql
 fi
 say "Database and user setup completed."
 
 #Table creation
-COUNTRY_FILE="mysql/countries.sql"
+COUNTRY_FILE="deploy/mysql/countries.sql"
 if [ -f "$COUNTRY_FILE" ]; then
     say "Importing countries from $COUNTRY_FILE..."
     mysql -u"${DB_VAADIN_USERNAME:-root}" -p"$DB_VAADIN_PASSWORD" "${DB_DATABASE:-velorim_crm}" < "$COUNTRY_FILE"
@@ -159,7 +159,7 @@ else
 fi
 say "MySQL version: $(mysql --version)"
 
-SCHEMA_FILE="mysql/schema.sql"
+SCHEMA_FILE="deploy/mysql/schema.sql"
 if [ -f "$SCHEMA_FILE" ]; then
     say "Importing schema from $SCHEMA_FILE..."
     mysql -u"${DB_VAADIN_USERNAME:-root}" -p"$DB_VAADIN_PASSWORD" "${DB_DATABASE:-velorim_crm}" < "$SCHEMA_FILE"

@@ -1,3 +1,4 @@
+@import "theme-editor.css";
 /* Example: CSS class name to center align the content . */
 .centered-content {
   margin: 0 auto;
@@ -10,4 +11,224 @@ vaadin-text-field.bordered::part(input-field) {
   background-color: var(--lumo-base-color);
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&display=swap');
+
+html {
+  --aura-accent-color-dark: #17a89e;
+  --aura-accent-color-light: #17a89e;
+  --aura-app-layout-inset: 0px;
+  --aura-background-color-dark: #181f1c;
+  --aura-background-color-light: #181f1c;
+  --aura-background-image: "images/velorimlogo.webp";
+  --aura-base-font-size: 15;
+  --aura-base-size: 20;
+  --aura-content-color-scheme: light dark;
+  --aura-font-family: 'Atkinson Hyperlegible Next', var(--aura-font-family-system);
+  --aura-notification-color-scheme: dark;
+  --aura-surface-level: -0.5;
+  color-scheme: dark;
+}
+
+vaadin-side-nav-item:not([current]) > vaadin-icon {
+  color: #FFFFFF;
+}
+
+vaadin-side-nav-item[current]::part(content) {
+  --vaadin-side-nav-item-background: var(--vaadin-background-container);
+  --vaadin-side-nav-item-border-color: grey;
+}
+
+vaadin-side-nav::part(label) {
+  text-transform: uppercase;
+  font-size: var(--aura-font-size-xs);
+  color: var(--vaadin-text-color);
+  letter-spacing: 0.03em;
+}
+
+:is(vaadin-button, vaadin-menu-bar-button, vaadin-upload-button):not([theme~="primary"], [theme~="tertiary"]) {
+  --aura-accent-color-light: #9CA3AF;
+  --aura-accent-color-dark: #9CA3AF;
+  --vaadin-button-background: #17a899;
+  --vaadin-button-border-color: #FFFFFF;
+  --vaadin-button-border-width: 1px;
+  --vaadin-button-shadow: none;
+}
+
+vaadin-app-layout::part(drawer) {
+    order: 1;
+}
+
+.segmented-pill-nav {
+    background-color: #171b19 !important;
+    padding: 6px !important;
+    border-radius: 9999px !important;
+    gap: 4px !important;
+}
+
+/* Strip default Vaadin button frames and turn them into flat pill items */
+.segmented-pill-nav .pill-item {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #9ea3a0 !important;
+    font-weight: 500 !important;
+    border-radius: 9999px !important;
+    padding: 8px 16px !important;
+    transition: color 0.2s ease, background-color 0.2s ease !important;
+}
+
+pill-item {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #17a89e !important;
+    font-weight: 500 !important;
+    border-radius: 9999px !important;
+    padding: 8px 16px !important;
+    transition: color 0.2s ease, background-color 0.2s ease !important;
+}
+
+.pill-item:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Hover state for unselected tabs */
+.segmented-pill-nav .pill-item:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* The active/selected tab capsule style */
+.segmented-pill-nav .pill-item.active {
+    background-color: #262c29 !important;
+    color: #00e699 !important;
+}
+
+.about-card {
+    background-color: rgba(30, 39, 36, 0.6);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.about-card h2 {
+    color: #17a89e;
+    margin-bottom: 12px;
+    justify-content: center;
+    text-align: center;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-right: 1rem;
+    line-height: 1.2;
+}
+
+.about-card h3 {
+    color: #17a89e;
+    margin-bottom: 12px;
+    justify-content: center;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-right: 1rem;
+    line-height: 1.2;
+}
+
+.about-card Div {
+    color: #d1d5db;
+    line-height: 1.2;
+    font-size: 1.5rem;
+    text-align: left;
+    
+}
+.about-card p{
+    color: #d1d5db;
+    line-height: 1.2;
+    font-size: 1.5rem;
+    text-align: left;
+}
+
+.lists {
+  align-items: flex-start;
+  text-align: left;
+  
+}
+
+.lists span {
+  color: #17a89e;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.lists div {
+  color: #d1d5db;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.line{
+  height: 1px;
+  background-color: #17a89e;
+  width: 100%;
+  margin: 0.75rem 0;
+}
+h2.center {
+  color:  #181f1c;
+  margin-bottom: 12px;
+  justify-content: center;
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  line-height: 1.2;
+  background-color: #17a89e;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+h2.home{
+    color: #17a89e;
+    margin-bottom: 12px;
+    justify-content: center;
+    text-align: center;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-right: 1rem;
+    line-height: 1.2;
+}
+
+h3.home{
+    color: #BAA520;
+    margin-bottom: 12px;
+    justify-content: center;
+    text-align: center;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-right: 1rem;
+    line-height: 1.2;
+    text-align: left;
+}
+.custom-icon{
+  --vaadin-icon-color: var(--aura-accent-color-dark);
+  border: 1px solid;
+  border-color: #17a89e;
+  --vaadin-icon-size: 3rem;
+}
+
+h3.contactus {
+  --vaadin-card-title-color :#17a89e;
+  text-align: left;
+  --vaadin-card-title-font-size: 3rem;
+}
+
+div.contactus {
+    color: #BAA520;
+    text-align: left;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
 

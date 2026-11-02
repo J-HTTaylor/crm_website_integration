@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.aura.Aura;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * The entry point of the Spring Boot application.
@@ -17,7 +17,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
  */
 @SpringBootApplication
 @PWA(name = "Project Base for Vaadin with Spring", shortName = "Project Base")
-@StyleSheet(Lumo.STYLESHEET)
+@StyleSheet(Aura.STYLESHEET)
 @StyleSheet("styles.css")
 public class Application implements AppShellConfigurator {
 

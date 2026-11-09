@@ -9,6 +9,7 @@
 #   ./start.sh            start the app on http://localhost:8080
 #   ./start.sh --port 4000  listen somewhere other than port 8080
 #   ./start.sh --help     show this message
+#   ./start.sh --dev    switches the production mode to dev mode
 #
 # This is for development. On a server, systemd starts the app instead.
 #
@@ -19,7 +20,7 @@ set -euo pipefail
 # Vaadin 24+ requires Java 21 or newer.
 REQUIRED_JAVA_MAJOR=21
 PORT_OVERRIDE=""
-
+PRODUCTION_MODE=true #needed to bypass paywall requirements
 # --- helpers ----------------------------------------------------------------
 
 say() {
@@ -47,6 +48,10 @@ while [ $# -gt 0 ]; do
             esac
             PORT_OVERRIDE="$2"
             shift 2
+            ;;
+        --dev|--d)
+            PRODUCTION_MODE=false # Option to drop back to dev mode if needed
+            shift
             ;;
         -h|--help)
             usage
@@ -109,9 +114,14 @@ fi
 # For Maven/Vaadin, running a quick compile/package ensures dependencies are 
 # downloaded and the Vaadin frontend build runs successfully on first clone.
 
-say "Installing dependencies and building frontend assets (this may take a moment on a fresh clone)..."
-./mvnw dependency:resolve compile
-
+if [ "$PRODUCTION_MODE" = true ]; then
+    say "Building production frontend assets (this will take a moment)..."
+    # This generates a compressed production bundle and turns off devmode checks
+    ./mvnw clean package -DskipTests -Pproduction
+else
+    say "Installing dependencies and building development frontend assets..."
+    ./mvnw dependency:resolve compile
+fi
 # --- Step 3: Create anything the app needs (Database / Sample Data) ----------
 # Spring Boot / Vaadin typically uses H2 or an embedded DB file for local dev.
 # If your app uses an explicit file database (e.g., data/todo.db), ensure 
@@ -169,16 +179,29 @@ else
 fi
 say "MySQL version: $(mysql --version)"
 
+
 # --- Step 4: Start the app and print the URL ----------------------------------
 
 
 PORT_IN_USE="${PORT_OVERRIDE:-8080}"
-say "Starting Vaadin app on http://localhost:${PORT_IN_USE} -- press Ctrl+C to stop"
 
-MAVEN_ARGS="spring-boot:run"
-if [ -n "$PORT_OVERRIDE" ]; then
-    MAVEN_ARGS="spring-boot:run -Dspring-boot.run.arguments=--server.port=$PORT_OVERRIDE"
+if [ "$PRODUCTION_MODE" = true ]; then
+    say "Starting Vaadin app in PRODUCTION MODE on http://localhost:${PORT_IN_USE} -- press Ctrl+C to stop"
+    
+    # Locate the compiled standalone jar created by step 2
+    TARGET_JAR=$(ls target/*.jar | head -n 1)
+    
+    # Run the compiled code directly so Spring Boot bypasses local licensing loops
+    if [ -n "$PORT_OVERRIDE" ]; then
+        exec java -jar "$TARGET_JAR" --server.port="$PORT_OVERRIDE"
+    else
+        exec java -jar "$TARGET_JAR"
+    fi
+else
+    say "Starting Vaadin app in DEVELOPMENT MODE on http://localhost:${PORT_IN_USE} -- press Ctrl+C to stop"
+    MAVEN_ARGS="spring-boot:run"
+    if [ -n "$PORT_OVERRIDE" ]; then
+        MAVEN_ARGS="spring-boot:run -Dspring-boot.run.arguments=--server.port=$PORT_OVERRIDE"
+    fi
+    exec ./mvnw $MAVEN_ARGS
 fi
-
-# exec replaces this shell with Java/Maven so Ctrl+C goes directly to the app
-exec ./mvnw $MAVEN_ARGS

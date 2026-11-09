@@ -38,7 +38,7 @@ public class AboutView extends VerticalLayout {
         Card overview = new Card();
         overview.setWidthFull();
         overview.addClassName("about-card");
-        overview.addThemeVariants(CardVariant.AURA_HORIZONTAL);
+        overview.addThemeVariants(CardVariant.HORIZONTAL);
 
         H2 tagline = new H2("Velorim is making cycling");
         tagline.getStyle().set("text-align", "right").set("margin-right", "5rem");

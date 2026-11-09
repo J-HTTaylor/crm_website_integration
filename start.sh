@@ -136,8 +136,8 @@ if [ ! -f .env ]; then
     else
         # Or generate default values directly in the script
         say "DB_DATABASE=velorim_crm" > .env
-        say "DB_USERNAME=root" >> .env
-        say "DB_PASSWORD=" >> .env
+        say "DB_USERNAME=vaadin" >> .env
+        say "DB_PASSWORD=VelorimVaadin12!" >> .env
         say "DB_VAADIN_USERNAME=vaadin" >> .env
         say "DB_VAADIN_PASSWORD=Vaadin_Full_Stack!" >> .env
     fi
@@ -151,10 +151,10 @@ fi
 
 say "Creating MYSQL Database and user if not already present"
 # Check if a password is provided in the environment
-if [ -n "$DB_PASSWORD" ]; then
-    mysql -u"${DB_USERNAME:-root}" -p"$DB_PASSWORD" < deploy/mysql/setup_db.sql
+if [ -f "deploy/mysql/setup_db.sql" ]; then
+    sudo mysql < deploy/mysql/setup_db.sql
 else
-    mysql -u"${DB_USERNAME:-root}" < deploy/mysql/setup_db.sql
+    die "deploy/mysql/setup_db.sql not found."
 fi
 say "Database and user setup completed."
 
@@ -162,7 +162,7 @@ say "Database and user setup completed."
 COUNTRY_FILE="deploy/mysql/countries.sql"
 if [ -f "$COUNTRY_FILE" ]; then
     say "Importing countries from $COUNTRY_FILE..."
-    mysql -u"${DB_VAADIN_USERNAME:-root}" -p"$DB_VAADIN_PASSWORD" "${DB_DATABASE:-velorim_crm}" < "$COUNTRY_FILE"
+    mysql -u"${DB_VAADIN_USERNAME}" -p"${DB_VAADIN_PASSWORD}" "${DB_DATABASE}" < "$COUNTRY_FILE"
     say "Countries imported successfully!"
 else
     say "Warning: $COUNTRY_FILE not found, skipping country import."
@@ -172,7 +172,7 @@ say "MySQL version: $(mysql --version)"
 SCHEMA_FILE="deploy/mysql/schema.sql"
 if [ -f "$SCHEMA_FILE" ]; then
     say "Importing schema from $SCHEMA_FILE..."
-    mysql -u"${DB_VAADIN_USERNAME:-root}" -p"$DB_VAADIN_PASSWORD" "${DB_DATABASE:-velorim_crm}" < "$SCHEMA_FILE"
+    mysql -u"${DB_VAADIN_USERNAME}" -p"${DB_VAADIN_PASSWORD}" "${DB_DATABASE}" < "$SCHEMA_FILE"
     say "Schema imported successfully!"
 else
     say "Warning: $SCHEMA_FILE not found, skipping schema import."

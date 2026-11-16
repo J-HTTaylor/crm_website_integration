@@ -45,7 +45,7 @@ public class HomeView extends VerticalLayout {
         HorizontalLayout searchArea = new HorizontalLayout();
 
         Select<String> distance = new Select<>();
-        distance.setItems("5 Miles", "15 Miles","30 Miles", "50 Miles","80 Miles");
+        distance.setItems("5 Miles", "15 Miles","All");
         distance.setValue("5 Miles");
 
         TextField postcodeField = new TextField();
@@ -86,7 +86,7 @@ public class HomeView extends VerticalLayout {
         Card contactHome = new Card();
         contactHome.setWidthFull();
         contactHome.addClassName("about-card");
-        contactHome.addThemeVariants(CardVariant.AURA_HORIZONTAL);
+        contactHome.addThemeVariants(CardVariant.HORIZONTAL);
 
         H3 tagline = new H3("Become a Centre");
         tagline.getStyle().set("text-align", "left").set("font-size", "1.5rem");

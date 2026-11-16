@@ -1,33 +1,40 @@
 package org.vaadin.application.views;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vaadin.application.databaseCommands;
 import org.vaadin.application.layout.DashboardLayout;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
 
 @PageTitle("Locations")
 @Route(value = "hub/Locations", layout = DashboardLayout.class)
-public class LocationsView extends VerticalLayout {
-    public LocationsView() {
+
+public class LocationsView extends VerticalLayout  implements AfterNavigationObserver{
+    
+    private final databaseCommands dbCommands;
+    private final Grid<String[]> grid = new Grid<>();
+    private  ListDataProvider<String[]> dataProvider = new ListDataProvider<>(new ArrayList<>());
+
+    public LocationsView(databaseCommands dbcommands) {
+        
+        this.dbCommands = dbcommands;
+
+        
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -40,20 +47,14 @@ public class LocationsView extends VerticalLayout {
         fullView.setSpacing(true);
         fullView.setPadding(false);
 
-
-        Grid<String[]> grid = new Grid<>();
-        grid.addColumn(row -> row[0]).setHeader("Location").setSortable(true).setHeader("Location");
-        grid.addColumn(row -> row[1]).setHeader("Product").setSortable(true).setHeader("Product");
-        grid.addColumn(row -> row[2]).setHeader("Status").setSortable(true).setHeader("Status");
-        grid.addColumn(row -> row[3]).setHeader("Join Date").setSortable(true).setHeader("Join Date");
-        grid.addColumn(row -> row[4]).setHeader("City").setSortable(true).setHeader("City");
-        grid.addColumn(row -> row[5]).setHeader("Postcode").setSortable(true).setHeader("Postcode");
-        grid.addColumn(row -> row[6]).setHeader("Country").setSortable(true).setHeader("Country");
-
-        // Create a data provider instance with a configurable filter, allowing
-        // the filter value to be set programmatically via setFilter().
-        List<String[]> csvData = loadCsvData("locations.csv");
-        ListDataProvider<String[]> dataProvider = new ListDataProvider<>(csvData);
+        Grid.Column<String[]> colLocation = grid.addColumn(row -> row[0]).setHeader("Location").setSortable(true);
+        Grid.Column<String[]> colProduct = grid.addColumn(row -> row[5]).setHeader("Product").setSortable(true);
+        Grid.Column<String[]> colStatus = grid.addColumn(row -> row[1]).setHeader("Status").setSortable(true);
+        Grid.Column<String[]> colJoin = grid.addColumn(row -> row[3]).setHeader("Join Date").setSortable(true);
+        Grid.Column<String[]> colCity = grid.addColumn(row -> row[2]).setHeader("City").setSortable(true);
+        Grid.Column<String[]> colPost = grid.addColumn(row -> row[4]).setHeader("Postcode").setSortable(true);
+        Grid.Column<String[]> colContact = grid.addColumn(row -> row[6]).setHeader("Contact").setSortable(true);
+        //db pull
 
         grid.setItems(dataProvider);
         grid.setPageSize(25);
@@ -63,41 +64,75 @@ public class LocationsView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.ROW_STRIPES);
 
 
-
+        //search sections
         TextField searchField = new TextField();
-        searchField.setWidth("50%");
-        searchField.setPlaceholder("Search");
-        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
-        searchField.setValueChangeMode(ValueChangeMode.EAGER);
-        searchField.addValueChangeListener(event -> {
-        String filterText = event.getValue().toLowerCase();
-        dataProvider.setFilter(row -> row[0].toLowerCase().contains(filterText) || row[1].toLowerCase().contains(filterText) || row[2].toLowerCase().contains(filterText) || row[3].toLowerCase().contains(filterText) || row[4].toLowerCase().contains(filterText) || row[5].toLowerCase().contains(filterText) || row[6].toLowerCase().contains(filterText));
-        });
+        searchField.setPlaceholder("Location");
 
-        fullView.add(searchField, grid);
+        TextField searchProduct = new TextField();
+        searchProduct.setPlaceholder("Product");
+
+        TextField searchstatus = new TextField();
+        searchstatus.setPlaceholder("Status");
+
+        TextField searchJoin = new TextField();
+        searchJoin.setPlaceholder("Join Date");
+
+        TextField searchCity = new TextField();
+        searchCity.setPlaceholder("City");
+
+        TextField searchPost = new TextField();
+        searchPost.setPlaceholder("Postcode");
+
+        TextField searchContact = new TextField();
+        searchContact.setPlaceholder("Contact");
+
+        for (TextField tf : new TextField[]{searchField, searchProduct, searchstatus, searchJoin, searchCity, searchPost, searchContact}) {
+            tf.setWidthFull();
+            tf.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+            tf.setValueChangeMode(ValueChangeMode.EAGER);
+            tf.addValueChangeListener(e -> dataProvider.refreshAll());
+        }
+
+        HeaderRow searchHeaderRow = grid.prependHeaderRow();
+        searchHeaderRow.getCell(colLocation).setComponent(searchField);
+        searchHeaderRow.getCell(colProduct).setComponent(searchProduct);
+        searchHeaderRow.getCell(colStatus).setComponent(searchstatus);
+        searchHeaderRow.getCell(colJoin).setComponent(searchJoin);
+        searchHeaderRow.getCell(colCity).setComponent(searchCity);
+        searchHeaderRow.getCell(colPost).setComponent(searchPost);
+        searchHeaderRow.getCell(colContact).setComponent(searchContact);
+
+    dataProvider.setFilter(row -> {
+        String locationFilter = searchField.getValue() == null ? "" : searchField.getValue().toLowerCase();
+        String productFilter = searchProduct.getValue() == null ? "" : searchProduct.getValue().toLowerCase();
+        String statusFilter = searchstatus.getValue() == null ? "" : searchstatus.getValue().toLowerCase();
+        String dateFilter = searchJoin.getValue() == null ? "" : searchJoin.getValue().toLowerCase();
+        String cityFilter = searchCity.getValue() == null ? "" : searchCity.getValue().toLowerCase();
+        String postFilter = searchPost.getValue() == null ? "" : searchPost.getValue().toLowerCase();
+        String contactFilter = searchContact.getValue() == null ? "" : searchContact.getValue().toLowerCase();
+
+        boolean matchesLocation = row[0] != null && row[0].toLowerCase().contains(locationFilter);
+        boolean matchesProduct = row[5] != null && row[5].toLowerCase().contains(productFilter);
+        boolean matchesStatus = row[1] != null && row[1].toLowerCase().contains(statusFilter);
+        boolean matchesDate = row[3] != null && row[3].toLowerCase().contains(dateFilter);
+        boolean matchesCity = row[2] != null && row[2].toLowerCase().contains(cityFilter);
+        boolean matchesPost = row[4] != null && row[4].toLowerCase().contains(postFilter);
+        boolean matchesContact = row[6] != null && row[6].toLowerCase().contains(contactFilter);
+
+        return matchesLocation && matchesProduct && matchesStatus && matchesDate && matchesCity && matchesPost && matchesContact;
+    });
+
+        fullView.add(grid);
         add(fullView);
     }
     
 
-    private List<String[]> loadCsvData(String fileName) {
-        List<String[]> records = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-            getClass().getClassLoader().getResourceAsStream(fileName), StandardCharsets.UTF_8))) {
-            
-            String line;
-            boolean isHeader = true;
-            while ((line = reader.readLine()) != null) {
-                if (isHeader) {
-                    isHeader = false;
-                    continue;
-                }
-                String[] values = line.split(",");
-                records.add(values);
-            }
+    public void afterNavigation(AfterNavigationEvent event) {
+        List<String[]> dbData = dbCommands.allCentreInfo();
+        dataProvider.getItems().clear();
+        if (dbData != null) {
+            dataProvider.getItems().addAll(dbData);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return records;
+        dataProvider.refreshAll();
     }
 }

@@ -2,21 +2,16 @@ package org.vaadin.application.views;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.vaadin.application.databaseCommands;
 import org.vaadin.application.layout.MainLayout;
 
 import com.vaadin.flow.component.badge.Badge;
 import com.vaadin.flow.component.badge.BadgeVariant;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.card.Card;
-import com.vaadin.flow.component.card.CardVariant;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -34,21 +29,22 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin.Minus.Vertical;
 
 
 @PageTitle("Centre")
 @Route(value = "centre", layout = MainLayout.class)
     
 public class CentreView extends VerticalLayout {
-        
+    
+    private final databaseCommands dbCommands;
     Card nearestLocation = new Card();
-    List<Integer> locationDet = new ArrayList<>(List.of(0));
+    List<Integer> locationDet;
     int currentPos = 0;
     boolean findPressed = false;
 
-    public CentreView() {
+    public CentreView(databaseCommands dbcommands) {
 
+        this.dbCommands = dbcommands;
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
@@ -80,7 +76,7 @@ public class CentreView extends VerticalLayout {
 
 
         Select<String> distance = new Select<>();
-        distance.setItems("5 Miles", "15 Miles","30 Miles", "50 Miles","80 Miles");
+        distance.setItems("5 Miles", "15 Miles","All");
         distance.setValue("5 Miles");
         distance.getStyle().set("margin-bottom", "0.2rem");
 
@@ -105,9 +101,32 @@ public class CentreView extends VerticalLayout {
         nearestLocation.getStyle().set("flex-grow", "0");
         nearestLocation.getStyle().set("box-sizing", "border-box");
         nearestLocation.getStyle().set("overflow", "hidden");
+        nearestLocation.setWidth("60%");
+        nearestLocation.setHeightFull();;
 
         // Action Button
-        Button findButton = new Button("find your center", e ->{findPressed = true; locationDet = getCenters(); currentPos = 0;  Card hold = updateCard(currentPos); result.replace(nearestLocation, hold); nearestLocation = hold;});
+
+        Button findButton = new Button("find your center", e ->{
+            if(postcodeField.getValue().length() > 8 || postcodeField.getValue().length() < 6  ){
+                Notification emptyInput = Notification.show("Invalid postcode format used");
+            }
+            else{
+                findPressed = true;
+                locationDet = dbCommands.totalActiveLocation(postcodeSelector(distance.getValue(), postcodeField.getValue()));
+                locationDet = refine(options.getValue(), locationDet);
+                if(locationDet.size() == 0){
+                    Notification emptyInput = Notification.show("No centers found within given restrictions");
+                    findPressed = false;
+                    return;
+                }
+                currentPos = 0; 
+                Card hold = updateCard(dbcommands.centreInfo(locationDet.get(currentPos))); 
+                result.replace(nearestLocation, hold); 
+                nearestLocation = hold;
+                System.out.print(locationDet.toString());
+            }
+        });
+
         findButton.addClassName("pill-item");
 
         VerticalLayout searchLayout = new VerticalLayout(find, options, distance, postcodeField, findButton);
@@ -122,13 +141,27 @@ public class CentreView extends VerticalLayout {
         Icon forwardArrow = VaadinIcon.ARROW_FORWARD.create();
         forwardArrow.setSize("3rem");
 
-        Button nextButton = new Button(forwardArrow, e -> {if(findPressed){increaseTick(); Card hold = updateCard(currentPos); result.replace(nearestLocation, hold); nearestLocation = hold;}});
+        Button nextButton = new Button(forwardArrow, e -> {
+            if(findPressed){
+                increaseTick(); 
+                Card hold = updateCard(dbcommands.centreInfo(locationDet.get(currentPos))); 
+                result.replace(nearestLocation, hold); 
+                nearestLocation = hold;
+            }
+        });
         nextButton.addClassName("pill-item");
 
         Icon backArrow = VaadinIcon.ARROW_BACKWARD.create();
         backArrow.setSize("3rem");
 
-        Button previousButton = new Button(backArrow, e ->{if(findPressed){decreaseTick(); Card hold = updateCard(currentPos); result.replace(nearestLocation, hold); nearestLocation = hold;}});
+        Button previousButton = new Button(backArrow, e ->{
+            if(findPressed){
+                decreaseTick(); 
+                Card hold = updateCard(dbcommands.centreInfo(locationDet.get(currentPos))); 
+                result.replace(nearestLocation, hold); 
+                nearestLocation = hold;
+            }
+        });
         previousButton.addClassName("pill-item");
 
         result.setVerticalComponentAlignment(Alignment.CENTER, previousButton);
@@ -255,111 +288,11 @@ public class CentreView extends VerticalLayout {
         add(centreMain);
     }
 
-    public List<String> fetchCountriesFromDatabase() {
-        List<String> countryNames = new ArrayList<>();
-        String url = "jdbc:mysql://localhost:3306/velorim_crm";
-        String user = System.getenv("DB_VAADIN_USERNAME");
-        String password = System.getenv("DB_VAADIN_PASSWORD");
-
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT full_name FROM countries")) {
-
-            while (resultSet.next()) {
-                countryNames.add(resultSet.getString("full_name"));
-            }
-        } catch (Exception e) {
-            System.err.println("CRITICAL DATABASE ERROR: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return countryNames;
-    }
-
-    //TODO update for real world pulling
-    public List<Integer> getCenters() {
-        List<Integer> retVal = new ArrayList<>();
-
-        String url = "jdbc:mysql://localhost:3306/velorim_crm";
-        String user = System.getenv("DB_VAADIN_USERNAME");
-        String password = System.getenv("DB_VAADIN_PASSWORD");
-
-        String sql = "SELECT id FROM centers LIMIT 5";
-
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(sql)) {
-        
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    retVal.add(resultSet.getInt("id"));
-                }
-            }
-        }
-        
-        catch (Exception e) {
-            System.err.println("CRITICAL DATABASE ERROR: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return retVal;
-    }
-
-
-    //gets location and stored products
-    public List<String> centreInfo(int id){
-        List<String> info = new  ArrayList<>();
-
-        String url = "jdbc:mysql://localhost:3306/velorim_crm";
-        String user = System.getenv("DB_VAADIN_USERNAME");
-        String password = System.getenv("DB_VAADIN_PASSWORD");
-
-        String sql = "SELECT * from centers where id = ? and status = 1";
-        String productsSql =  "select p.name from products p inner join center_products c on p.id = c.product_id where c.center_id = ?";
-
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(sql)) {
-        
-            statement.setInt(1, id);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    info.add(resultSet.getString("name"));
-                    info.add(resultSet.getString("address_line_1"));
-                    info.add(resultSet.getString("address_line_2"));
-                    info.add(resultSet.getString("city"));
-                    info.add(resultSet.getString("postcode"));
-                    info.add(resultSet.getString("image"));
-                }
-            }
-        }
-        
-        
-        catch (Exception e) {
-            System.err.println("CRITICAL DATABASE ERROR: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-            PreparedStatement statement = connection.prepareStatement(productsSql)) {
-        
-            statement.setInt(1, id);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    info.add(resultSet.getString("name"));
-                }
-            }
-        }
-        
-        
-        catch (Exception e) {
-            System.err.println("CRITICAL DATABASE ERROR: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return info;
-    }
-
     //TODO in cp 5 add checks and real world pulls
-    public Card updateCard(int cardId){
+    public Card updateCard(List<String> cardinfo){
         Card updatedCard = new Card();
+        updatedCard.setWidth("60%");
+        updatedCard.setHeightFull();
         
         //sets base image
         Image defaultImage = new Image("images/velorimlogo.webp", "Velorim Logo");
@@ -376,11 +309,8 @@ public class CentreView extends VerticalLayout {
         imageContainer.setSpacing(false);
         imageContainer.getStyle().set("border-bottom", "1px solid rgba(255, 255, 255, 0.15)");
 
-        H2 centreTitle = new H2("Velorim" + cardId);
-        H3 locTitle = new H3("Head Office");
-        locTitle.getStyle().set("color", "#FFFFFF");
-
-        VerticalLayout titleAndSubtitle = new VerticalLayout(centreTitle, locTitle);
+        H2 centreTitle = new H2(cardinfo.get(0));
+        VerticalLayout titleAndSubtitle = new VerticalLayout(centreTitle);
         titleAndSubtitle.setSpacing(false);
         titleAndSubtitle.setPadding(false);
         titleAndSubtitle.addClassName("centreView");
@@ -391,33 +321,42 @@ public class CentreView extends VerticalLayout {
         acceptedItems.setPadding(false);
         acceptedItems.setAlignItems(Alignment.END);
 
-        Badge tyreBadge = new Badge("Tyres");
-        tyreBadge.addThemeVariants(BadgeVariant.SUCCESS);
+        //seting base info
+        Paragraph adr1 = new Paragraph(cardinfo.get(1));
+        Paragraph adr2 = new Paragraph(cardinfo.get(2));
+        Paragraph city = new Paragraph(cardinfo.get(3));
+        Paragraph postcode = new Paragraph(cardinfo.get(4));
 
-        Badge tubeBadge = new Badge("Tubes");
-        tubeBadge.addThemeVariants(BadgeVariant.SUCCESS);
+        for (Paragraph p : new Paragraph[]{adr1, adr2, city, postcode}) {
+            p.getStyle().set("margin", "0");
+        }
 
-        Badge lionBadge = new Badge("Batteries");
-        lionBadge.addThemeVariants(BadgeVariant.SUCCESS);
-        acceptedItems.add(tyreBadge, tubeBadge, lionBadge);
+        //badge checks
+        if(cardinfo.get(6).contains("Tyres")){
+            Badge tyreBadge = new Badge("Tyres");
+            tyreBadge.addThemeVariants(BadgeVariant.SUCCESS);
+            tyreBadge.getStyle().set("margin", "0.1rem");
+            acceptedItems.add(tyreBadge);
+        }
 
-        for (Badge b : new Badge[]{tyreBadge, tubeBadge, lionBadge}) {
-            b.getStyle().set("margin", "0.1rem");
+        if(cardinfo.get(6).contains("Tubes")){
+            Badge tubeBadge = new Badge("Tubes");
+            tubeBadge.addThemeVariants(BadgeVariant.SUCCESS);
+            tubeBadge.getStyle().set("margin", "0.1rem");
+            acceptedItems.add(tubeBadge);
+        }
+
+        if(cardinfo.get(6).contains("Li-ion Battery")){
+            Badge lionBadge = new Badge("Batteries");
+            lionBadge.addThemeVariants(BadgeVariant.SUCCESS);
+            acceptedItems.add(lionBadge);
+            lionBadge.getStyle().set("margin", "0.1rem");
+            acceptedItems.add(lionBadge);
         }
 
         VerticalLayout nameAndBadgesRow = new VerticalLayout(titleAndSubtitle, acceptedItems);
         nameAndBadgesRow.setWidthFull();
         nameAndBadgesRow.getStyle().set("padding", "10px");
-
-        //seting base info
-        Paragraph adr1 = new Paragraph("1910 W University Dr");
-        Paragraph adr2 = new Paragraph();
-        Paragraph city = new Paragraph("Boise");
-        Paragraph postcode = new Paragraph("83725");
-
-        for (Paragraph p : new Paragraph[]{adr1, adr2, city, postcode}) {
-            p.getStyle().set("margin", "0");
-        }
 
         Div locationSpec = new Div(adr1, adr2, city, postcode);
         
@@ -427,15 +366,15 @@ public class CentreView extends VerticalLayout {
 
         //contact info
         H3 websiteCard = new H3("Website: ");
-        Anchor webAddr = new Anchor("https://www.boisestate.edu", "https://www.boisestate.edu");
+        Anchor webAddr = new Anchor("https://www.boisestate.edu", cardinfo.get(7));
         Span website = new Span(websiteCard, webAddr);
 
         H3 phoneCard = new H3("Phone: ");
-        Anchor phoneNum = new Anchor("tel:+12084264636", "(208) 426-4636");
+        Anchor phoneNum = new Anchor(cardinfo.get(9), cardinfo.get(9));
         Span phone = new Span(phoneCard, phoneNum);
 
         H3 emailCard = new H3("Email: ");
-        Anchor emailAddr = new Anchor("mailto:helpdesk@boisestate.edu", "helpdesk@boisestate.edu");
+        Anchor emailAddr = new Anchor("mailto:" + cardinfo.get(8), cardinfo.get(8));
         Span email = new Span(emailCard, emailAddr);
 
         Div contactSpec = new Div(website, phone, email);
@@ -469,7 +408,7 @@ public class CentreView extends VerticalLayout {
         bottomContent.setSpacing(false);
         bottomContent.setAlignItems(Alignment.CENTER);
         bottomContent.getStyle().set("box-sizing", "border-box");
-        bottomContent.getStyle().set("flex-grow", "1");
+        bottomContent.getStyle().set("flex-grow", "0");
         bottomContent.setFlexGrow(1, basiContact, advancedContact);
 
         updatedCard.add(imageContainer, bottomContent);
@@ -479,7 +418,7 @@ public class CentreView extends VerticalLayout {
     public void increaseTick(){
         if(currentPos == locationDet.size() - 1){
             currentPos = 0;
-        }
+        }   
         else{
             currentPos++;
         }
@@ -487,8 +426,8 @@ public class CentreView extends VerticalLayout {
 
     public void decreaseTick(){
         if(currentPos == 0){
-            currentPos = locationDet.size() -1;
-        }
+            currentPos = locationDet.size() - 1;
+        }   
         else{
             currentPos--;
         }
@@ -502,10 +441,46 @@ public class CentreView extends VerticalLayout {
 
             getUI().ifPresent(ui -> ui.getPage().open(mapsUrl, "_blank"));
 
-        } 
+        }
         catch (Exception e) {
             Notification.show("Could not resolve address formatting.");
         }
 
+    }
+    
+    public String postcodeSelector(String option, String postcode) {
+
+        String clean = postcode.trim().toUpperCase().replaceAll("\\s+", "");
+
+        switch (option) {
+            case "5 Miles":
+                return clean.length() > 3 ? clean.substring(0, clean.length() - 3) + " " : clean;
+
+            case "15 Miles":
+                int i = 0;
+                while (i < clean.length() && Character.isLetter(clean.charAt(i))) {
+                    i++;
+                }
+                return clean.substring(0, i);
+
+            case "All":
+            default:
+                return "";
+        }
+    }
+   
+    public List<Integer> refine(String searchPeram, List<Integer> checkAgainst){
+        if(searchPeram.equals("All Materials")){
+            return checkAgainst;
+        }
+        List<Integer> retList = checkAgainst;
+        Iterator<Integer> listIterator = retList.iterator();
+        while (listIterator.hasNext()) {
+            Integer item = listIterator.next();
+            if(!dbCommands.centreInfo(item).get(6).contains(searchPeram)) {
+                listIterator.remove();
+            }
+        }
+        return retList;
     }
 }

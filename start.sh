@@ -135,27 +135,46 @@ if [ ! -f .env ]; then
         say "Created .env file from .env.example template."
     else
         # Or generate default values directly in the script
-        say "DB_DATABASE=velorim_crm" > .env
-        say "DB_USERNAME=vaadin" >> .env
-        say "DB_PASSWORD=VelorimVaadin12!" >> .env
-        say "DB_VAADIN_USERNAME=vaadin" >> .env
-        say "DB_VAADIN_PASSWORD=Vaadin_Full_Stack!" >> .env
+        echo "DB_DATABASE=velorim_crm" > .env
+        echo "DB_USERNAME=vaadin" >> .env
+        echo "DB_PASSWORD=VelorimVaadin12!" >> .env
+        echo "DB_VAADIN_USERNAME=vaadin" >> .env
+        echo "DB_VAADIN_PASSWORD=Vaadin_Full_Stack!" >> .env
     fi
 fi
 
 if [ -f .env ]; then
+    #check the vars exist in the db file
+    required_vars=("DB_DATABASE" "DB_USERNAME" "DB_PASSWORD" "DB_VAADIN_USERNAME" "DB_VAADIN_PASSWORD")
+    required_vals=("DB_DATABASE=velorim_crm" "DB_USERNAME=vaadin" "DB_PASSWORD=VelorimVaadin12!" "DB_VAADIN_USERNAME=vaadin" "DB_VAADIN_PASSWORD=Vaadin_Full_Stack!")
+
+    sed -i -e '$a\' .env
+
+    for i in "${!required_vars[@]}"; do
+        var="${required_vars[$i]}"
+        if ! grep -q "^${var}=" .env; then
+            echo "${var} missing, adding it to .env file"
+            echo "${required_vals[$i]}" >> .env
+        fi
+    done
+
     set -o allexport
     source .env
     set +o allexport
 fi
 
 say "Creating MYSQL Database and user if not already present"
-# Check if a password is provided in the environment
-if [ -f "deploy/mysql/setup_db.sql" ]; then
-    sudo mysql < deploy/mysql/setup_db.sql
-else
-    die "deploy/mysql/setup_db.sql not found."
-fi
+
+sudo mysql <<EOF
+CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${DB_VAADIN_USERNAME}'@'localhost' IDENTIFIED BY '${DB_VAADIN_PASSWORD}';
+CREATE USER IF NOT EXISTS '${DB_VAADIN_USERNAME}'@'%' IDENTIFIED BY '${DB_VAADIN_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`${DB_DATABASE}\`.* TO '${DB_VAADIN_USERNAME}'@'localhost';
+GRANT ALL PRIVILEGES ON \`${DB_DATABASE}\`.* TO '${DB_VAADIN_USERNAME}'@'%';
+FLUSH PRIVILEGES;
+EOF
+
+say "Database and user setup completed."
 say "Database and user setup completed."
 
 #Table creation
@@ -176,6 +195,15 @@ if [ -f "$SCHEMA_FILE" ]; then
     say "Schema imported successfully!"
 else
     say "Warning: $SCHEMA_FILE not found, skipping schema import."
+fi
+
+EXAMPLE_FILE="deploy/mysql/exampleData.sql"
+if [ -f "$SCHEMA_FILE" ]; then
+    say "Importing example data from $EXAMPLE_FILE..."
+    mysql -u"${DB_VAADIN_USERNAME}" -p"${DB_VAADIN_PASSWORD}" "${DB_DATABASE}" < "$EXAMPLE_FILE"
+    say "Example data imported successfully!"
+else
+    say "Warning: $EXAMPLE_FILE not found, skipping example data import."
 fi
 say "MySQL version: $(mysql --version)"
 

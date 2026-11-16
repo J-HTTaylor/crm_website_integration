@@ -1,12 +1,10 @@
 package org.vaadin.application.views;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.vaadin.application.layout.MainLayout;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.card.Card;
 import com.vaadin.flow.component.card.CardVariant;
@@ -14,7 +12,6 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -35,15 +32,11 @@ import com.vaadin.flow.router.Route;
 @Route(value = "contact", layout = MainLayout.class)
 
 public class ContactView extends VerticalLayout {
-        //declaration for email to work
-    private final JavaMailSender mailSender;
     
     @Value("${EMAIL_SENDER}")
     private String teamEmail;
 
-   @Autowired
     public ContactView(JavaMailSender mailSender, @Value("${EMAIL_SENDER}") String teamEmail) {
-        this.mailSender = mailSender;
         this.teamEmail = teamEmail;
         HorizontalLayout contactForms = new HorizontalLayout();
         VerticalLayout contactSide = new VerticalLayout();
@@ -156,9 +149,9 @@ public class ContactView extends VerticalLayout {
         phoneAndEmail.getStyle().set("gap", "2rem").set("padding", "1rem").set("margin", "3rem 0.5rem  0.5rem  0.5rem ");
 
         Card emailCard = new Card();
-        emailCard.addThemeVariants(CardVariant.AURA_HORIZONTAL);
-        emailCard.addThemeVariants(CardVariant.AURA_ELEVATED);
-        emailCard.addThemeVariants(CardVariant.AURA_OUTLINED);
+        emailCard.addThemeVariants(CardVariant.HORIZONTAL);
+        emailCard.addThemeVariants(CardVariant.ELEVATED);
+        emailCard.addThemeVariants(CardVariant.OUTLINED);
         emailCard.setWidthFull();
 
         
@@ -179,9 +172,9 @@ public class ContactView extends VerticalLayout {
         emailCard.setHeaderSuffix(emailLink);
 
         Card phoneCard = new Card();
-        phoneCard.addThemeVariants(CardVariant.AURA_HORIZONTAL);
-        phoneCard.addThemeVariants(CardVariant.AURA_ELEVATED);
-        phoneCard.addThemeVariants(CardVariant.AURA_OUTLINED);
+        phoneCard.addThemeVariants(CardVariant.HORIZONTAL);
+        phoneCard.addThemeVariants(CardVariant.ELEVATED);
+        phoneCard.addThemeVariants(CardVariant.OUTLINED);
         phoneCard.setWidthFull();
 
         H3 phoneWords = new H3("Phone");

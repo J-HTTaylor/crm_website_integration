@@ -1,14 +1,21 @@
 package org.vaadin.application.views;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.vaadin.application.databaseCommands;
 import org.vaadin.application.layout.DashboardLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.component.card.Card;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -16,8 +23,14 @@ import com.vaadin.flow.router.Route;
 
 @PageTitle("Dashboard")
 @Route(value = "dashboard", layout = DashboardLayout.class)
-public class DashboardView extends VerticalLayout {
-    public DashboardView() {
+public class DashboardView extends VerticalLayout implements AfterNavigationObserver{
+
+    private final databaseCommands dbCommands;
+    private final Grid<String[]> grid = new Grid<>();
+    private  ListDataProvider<String[]> dataProvider = new ListDataProvider<>(new ArrayList<>());
+    
+    public DashboardView(databaseCommands dbcommands) {
+        this.dbCommands = dbcommands;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -63,15 +76,31 @@ public class DashboardView extends VerticalLayout {
 
         Card area = new Card();
         area.setTitle("Most active area");
-        H2 location = new H2("Staffordshire");
+        H2 location = new H2(dbcommands.commonArea());
         area.add(location);
 
         Card common = new Card();
         common.setTitle("Growth");
-        H2 growth = new H2("25.5%");
-        Icon arrow = VaadinIcon.ARROW_UP.create();
-        arrow.setColor("green");
-        arrow.setSize("2rem");
+        String growthVal = dbcommands.growth();
+        H2 growth = new H2(growthVal);
+        Icon arrow;
+
+        if(growthVal.equals("0.0%")){
+                arrow = VaadinIcon.MINUS.create();
+            arrow.setColor("grey");
+            arrow.setSize("2rem");
+        }
+        
+        else if(growthVal.contains("-")){
+                arrow = VaadinIcon.ARROW_DOWN.create();
+            arrow.setColor("red");
+            arrow.setSize("2rem");
+        }
+        else{
+            arrow = VaadinIcon.ARROW_UP.create();
+            arrow.setColor("green");
+            arrow.setSize("2rem");
+        }
 
         HorizontalLayout changes = new HorizontalLayout(growth, arrow);
         common.add(changes);
@@ -95,19 +124,33 @@ public class DashboardView extends VerticalLayout {
         weightSaved.setTitle("weight Saved");
         weightSaved.setSizeFull();
 
+        List<Integer[]> collections = dbcommands.collectedProductbreakdown();
+
+        int tyreWeight = collections.get(0)[0] * 40;
+        int tubeWeight = collections.get(1)[0] * 15;
+        int lionWeight = collections.get(2)[0] * 20;
+
+        double tyreCost = collections.get(0)[0] * 1.5;
+        double tubeCost = collections.get(1)[0] * 1;
+        double lionCost = collections.get(2)[0] * 30;
+        double totalRev = tyreCost +tubeCost + lionCost;
+        double totalExpense = 100.00;
+        double netChange = totalRev - totalExpense;
+
         Card tyresSvd = new Card();
         tyresSvd.setTitle("Tyres");
-        H2 tyreAmt = new H2("5,000 Kg");
+        H2 tyreAmt = new H2( String.valueOf(tyreWeight) + " Kg");
         tyresSvd.add(tyreAmt);
 
+        
         Card tubesSvd = new Card();
         tubesSvd.setTitle("Tubes");
-        H2 tubesAmt = new H2("3458 Kg");
+        H2 tubesAmt = new H2(String.valueOf(tubeWeight) + " Kg");
         tubesSvd.add(tubesAmt);
 
         Card lionSvd = new Card();
         lionSvd.setTitle("Batteries");
-        H2 lionAmt = new H2("123 Kg");
+        H2 lionAmt = new H2(String.valueOf(lionWeight) + " Kg");
         lionSvd.add(lionAmt);
 
         HorizontalLayout  allSvd = new HorizontalLayout(tyresSvd, tubesSvd, lionSvd);
@@ -122,21 +165,35 @@ public class DashboardView extends VerticalLayout {
 
         Card increase = new Card();
         increase.setTitle("Revenue");
-        H2 increaseAmt = new H2("£385.26");
+        H2 increaseAmt = new H2("£" + String.format("%.2f", totalRev));
         increaseAmt.getStyle().set("color", "green");
         increase.add(increaseAmt);
 
         Card deacrease = new Card();
         deacrease.setTitle("Expenses");
-        H2 deacreaseAmt = new H2("£100.00");
+        H2 deacreaseAmt = new H2("£" + String.format("%.2f", totalExpense));
         deacreaseAmt.getStyle().set("color", "red");
         deacrease.add(deacreaseAmt);
 
+
         Card total = new Card();
         total.setTitle("Net Change");
-        H2 totalAmt = new H2("+ £285.26");
-        totalAmt.getStyle().set("color", "green");
-        total.add(totalAmt);
+        if( netChange > 0){
+            H2 totalAmt = new H2( "+ £" + String.format("%.2f", netChange));
+            totalAmt.getStyle().set("color", "green");
+            total.add(totalAmt);
+        }
+        else if( netChange < 0 ){
+            H2 totalAmt = new H2( "- £" + String.format("%.2f", netChange));
+            totalAmt.getStyle().set("color", "red");
+            total.add(totalAmt);
+        }
+        else{
+            H2 totalAmt = new H2( "£" + String.format("%.2f", netChange));
+            totalAmt.getStyle().set("color", "grey");
+            total.add(totalAmt);
+        }
+        
 
         HorizontalLayout  totalCost = new HorizontalLayout(increase, deacrease, total);
         totalCost .setSizeFull();
@@ -184,13 +241,9 @@ public class DashboardView extends VerticalLayout {
         futureDels.addColumn(row -> row[2]).setHeader("Due Date");
         futureDels.addColumn(row -> row[3]).setHeader("Link");
 
-        futureDels.setItems(
-            new String[]{"Solar Panel X1", "Warehouse A", "2026-06-15", "View Details"},
-            new String[]{"Inverter Pro", "Warehouse B", "2026-06-18", "View Details"},
-            new String[]{"Battery Pack 10kWh", "Warehouse A", "2026-06-20", "View Details"},
-            new String[]{"Mounting Brackets", "Warehouse C", "2026-06-22", "View Details"},
-            new String[]{"DC Cable Roll", "Warehouse B", "2026-06-25", "View Details"}
-        );
+        List<String[]> nextColls = dbCommands.upcomingCollections();
+       
+        futureDels.setItems(nextColls);
 
         //futureDels.setAllRowsVisible(true);
         futureDels.setPageSize(3);
@@ -234,16 +287,22 @@ public class DashboardView extends VerticalLayout {
         products.addColumn(row -> row[2]).setHeader("Year");
         products.addColumn(row -> row[3]).setHeader("Total");
 
-        products.setItems(
-            new String[]{"Tyres", "154", "1000", "10000"},
-            new String[]{"Tubes", "60", "849", "1234"},
-            new String[]{"Li-ion Battery", "4", "70", "125"}
-
-        );
+        List<String[]> prods = dbCommands.collectedProductInfo();
+        products.setItems(prods);
 
         //futureDels.setAllRowsVisible(true);
         products.setPageSize(3);
         products.setSizeFull();
         return products;
+    }
+
+    
+    public void afterNavigation(AfterNavigationEvent event) {
+        List<String[]> dbData = dbCommands.allCollectionInfo();
+        dataProvider.getItems().clear();
+        if (dbData != null) {
+            dataProvider.getItems().addAll(dbData);
+        }
+        dataProvider.refreshAll();
     }
 }

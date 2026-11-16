@@ -34,11 +34,8 @@ public class DashboardLayout extends AppLayout implements BeforeEnterObserver {
     private void createHeader() {
         Image logo = new Image("images/velorimlogo.webp", "Velorim Logo");
 
-        Button homeBtn = createNavButton("Home", HomeView.class);
-        homeBtn.getStyle().set("margin-left", "68px");
-
         HorizontalLayout topNav = new HorizontalLayout(
-            homeBtn,
+            createNavButton("Home", HomeView.class),
             createNavButton("Find your centre", CentreView.class),
             createNavButton("About us", AboutView.class),
             createNavButton("Contact us", ContactView.class),
@@ -46,8 +43,9 @@ public class DashboardLayout extends AppLayout implements BeforeEnterObserver {
         );
 
         // Set button location
+        topNav.getStyle().set("margin-left", "70px");
         topNav.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-        topNav.setSpacing("50px");
+        topNav.setSpacing(false);
         topNav.setAlignItems(FlexComponent.Alignment.CENTER);
         
         // Add your pill wrapper class if you use one here too
@@ -58,6 +56,7 @@ public class DashboardLayout extends AppLayout implements BeforeEnterObserver {
         header.setPadding(true);
         header.setSpacing(true);
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        header.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, logo, topNav);
         header.expand(topNav);
 
         addToNavbar(header);

@@ -1,14 +1,10 @@
 package org.vaadin.application.views;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.vaadin.application.databaseCommands;
 import org.vaadin.application.layout.MainLayout;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.card.Card;
 import com.vaadin.flow.component.card.CardVariant;
 import com.vaadin.flow.component.html.Div;
@@ -31,9 +27,11 @@ import com.vaadin.flow.router.Route;
 @Route(value = "about", layout = MainLayout.class)
 
 public class AboutView extends VerticalLayout {
-    public AboutView() {
+    private final databaseCommands dbCommands;
 
-        //segment 1 details
+    public AboutView(databaseCommands dbcommands) {
+        this.dbCommands = dbcommands;
+    
 
         Card overview = new Card();
         overview.setWidthFull();
@@ -93,16 +91,19 @@ public class AboutView extends VerticalLayout {
         productsCol.setPadding(false);
         productsCol.setSpacing(true);
 
-        H2 centersTitle = new H2("600");
-        centersTitle.getStyle().set("margin-right", "4rem");
-        //TODO update this with real world vals
+        H2 centersTitle = new H2(dbcommands.countActive());
+        centersTitle.getStyle().set("text-align", "center");
+
+
         Div centersStatement = new Div("Centres across the UK");
         centersStatement.getStyle().set("text-align", "center");
 
         VerticalLayout centersCol = new VerticalLayout(centersTitle, centersStatement);
         centersCol.setPadding(false);
         centersCol.setSpacing(true);
-        centersCol.setHorizontalComponentAlignment(FlexComponent.Alignment.END, centersTitle, centersStatement);
+ 
+        centersCol.setAlignItems(Alignment.CENTER);
+        centersCol.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
         HorizontalLayout productsHeader = new HorizontalLayout(productsCol, centersCol);
         productsHeader.setWidthFull();
@@ -164,7 +165,7 @@ public class AboutView extends VerticalLayout {
         tyrePrice.setWidthFull();
         tyrePrice.addClassName("about-card");
 
-        H2 tyrePriceVal = new H2("£1.50");
+        H2 tyrePriceVal = new H2("£"+ dbcommands.productInfo("tyres"));
         tyrePrice.getStyle().set("text-align", "center");
 
         Div tyre = new Div("Tyre");
@@ -177,7 +178,7 @@ public class AboutView extends VerticalLayout {
         tubePrice.setWidthFull();
         tubePrice.addClassName("about-card");
 
-        H2 tubePriceVal = new H2("50p");
+        H2 tubePriceVal = new H2("$"+ dbcommands.productInfo("tubes"));
         tubePrice.getStyle().set("text-align", "center");
 
         Div tube = new Div("Inner Tube");
@@ -190,7 +191,7 @@ public class AboutView extends VerticalLayout {
         lionPrice.setWidthFull();
         lionPrice.addClassName("about-card");
 
-        H2 lionPriceVal = new H2("£30.00");
+        H2 lionPriceVal = new H2("£"+ dbcommands.productInfo("Li-ion Battery"));
         lionPrice.getStyle().set("text-align", "center");
 
         Div lion = new Div("Li-ion Battery");
@@ -257,7 +258,7 @@ public class AboutView extends VerticalLayout {
         HorizontalLayout searchArea = new HorizontalLayout();
 
         Select<String> distance = new Select<>();
-        distance.setItems("5 Miles", "15 Miles","30 Miles", "50 Miles","80 Miles");
+        distance.setItems("5 Miles", "15 Miles","All");
         distance.setValue("5 Miles");
 
         TextField postcodeField = new TextField();
@@ -316,7 +317,7 @@ public class AboutView extends VerticalLayout {
         H2 ourHistory = new H2("Corporate History");
         ourHistory.getStyle().set("text-align", "left");
 
-        Paragraph corpHist = new Paragraph("The founding Directors were previously Trustees of a Bicycle Recycling Charity, providing training and work experience for long-term unemployed to get them back into the job market. The work involved renovating/refurbishing donated second-hand bikes, so they could be sold at an affordable price to those in the community who needed them. However, about ½ of the bikes donated were too deteriorated to be economically refurbished, so were stripped for any usable parts. \n\n\nAt the end of this process, the charity was left with piles of steel, aluminum, plastic, and rubber. The local scrap dealers were more than happy to take the first three piles, but no one wanted the rubber (some even quoted £9.00 per tyre). At the time the Trustees were working closely with other cycle shops across the UK redefining the Cycle Mechanic Apprenticeship and in discussing what to do with waste rubber, everyone involved said they had the same issue.  Velorim launched the UK National Bicycle Waste Recycling Scheme in September 2020 and it now services over 650 locations across the UK. Velorim have secured their own site to enable it to bring reprocessing, with machinery it has specifically developed for that purpose, and expects to have its new site in South Staffordshire operational before the end of the second quarter 2025.");
+        Paragraph corpHist = new Paragraph("The founding Directors were previously Trustees of a Bicycle Recycling Charity, providing training and work experience for long-term unemployed to get them back into the job market. The work involved renovating/refurbishing donated second-hand bikes, so they could be sold at an affordable price to those in the community who needed them. However, about ½ of the bikes donated were too deteriorated to be economically refurbished, so were stripped for any usable parts. \n\n\nAt the end of this process, the charity was left with piles of steel, aluminum, plastic, and rubber. The local scrap dealers were more than happy to take the first three piles, but no one wanted the rubber (some even quoted £9.00 per tyre). At the time the Trustees were working closely with other cycle shops across the UK redefining the Cycle Mechanic Apprenticeship and in discussing what to do with waste rubber, everyone involved said they had the same issue.  Velorim launched the UK National Bicycle Waste Recycling Scheme in September 2020 and it now services over " + dbcommands.countActive() +" locations across the UK. Velorim have secured their own site to enable it to bring reprocessing, with machinery it has specifically developed for that purpose, and expects to have its new site in South Staffordshire operational before the end of the second quarter 2025.");
         
         corpHist.getStyle().set("white-space", "pre-line");
 
@@ -374,8 +375,8 @@ public class AboutView extends VerticalLayout {
         Card contactUs = new Card();
         contactUs.setWidthFull();
         contactUs.addClassName("about-card");
-        contactUs.addThemeVariants(CardVariant.AURA_HORIZONTAL);
-        contactUs.addThemeVariants(CardVariant.AURA_COVER_MEDIA);
+        contactUs.addThemeVariants(CardVariant.HORIZONTAL);
+        contactUs.addThemeVariants(CardVariant.COVER_MEDIA);
 
         H3 involve = new H3("Become a Centre");
         H2 contact = new H2("Get Involved");
